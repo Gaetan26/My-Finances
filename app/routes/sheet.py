@@ -6,6 +6,20 @@ from utils.logger import logger
 
 router = APIRouter()
 
+@router.get("/balances")
+async def get_balances(response: Response):
+    balances = await sheet_services.get_balances()
+
+    if balances:
+        return {
+            "success": True,
+            "content": {
+                "balances": balances
+            }
+        }
+
+    return
+
 @router.get('/transactions')
 async def get_transactions(response: Response):
     transactions = await sheet_services.get_transactions()

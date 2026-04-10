@@ -2,8 +2,27 @@
 from core import gspread
 from models.pydantic import sheet as sheet_models
 from utils.logger import logger
+from utils.others import convert_str_to_int
 
 sheet = gspread.client.open("My Finances").worksheet("Transactions")
+
+async def get_balances() -> dict:
+    transactions = await get_transactions()
+    balances = dict()
+
+    for currency in sheet_models.Currency:
+        balances[currency] = 0
+
+    for transaction in transactions:
+        amount = transaction['Amount']
+        
+        if isinstance(amount, str):
+            amount = convert_str_to_int(amount)
+
+        if amount:
+            balances[transaction['Currency']] += amount
+
+    return balances
 
 async def get_transactions() -> list:
     try:
