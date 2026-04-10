@@ -1,0 +1,5 @@
+fastapi
+uvicorn
+loguru
+gspread
+oauth2client

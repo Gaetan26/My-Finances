@@ -1,0 +1,18 @@
+services:
+  my-finances:
+    container_name: my-finances
+    build:
+      context: .
+      dockerfile: Dockerfile
+    networks:
+      - proxy
+    labels:
+      - "traefik.http.routers.my-finances.rule=Host(`my-finances.localhost`)"
+      - "traefik.http.routers.my-finances.entrypoints=web"
+      # - "traefik.http.routers.my-finances.tls.certresolver=myresolver"
+
+networks:
+  proxy:
+    name: proxy
+    external: true
+
