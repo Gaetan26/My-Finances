@@ -15,6 +15,8 @@ async def get_transactions() -> list:
 
 async def add_transaction(transaction: sheet_models.Transaction) -> bool:
     try:
+        if transaction.type == sheet_models.Type.Outcoming:
+            transaction.amount = - transaction.amount
         transaction_values = list(transaction.model_dump().values())
         sheet.append_row(transaction_values)
         return True
