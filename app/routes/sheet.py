@@ -10,7 +10,7 @@ router = APIRouter()
 async def get_transactions(response: Response):
     transactions = await sheet_services.get_transactions()
 
-    if transactions:
+    if isinstance(transactions, list):
         logger.success("all transactions fetched")
         return {
             "success": True,
