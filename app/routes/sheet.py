@@ -1,10 +1,31 @@
 
-from fastapi import APIRouter, Response, status
+from fastapi import APIRouter, Response, status, HTTPException
 from models.pydantic import sheet as sheet_models
 from services import sheet as sheet_services
 from utils.logger import logger
+import httpx
 
 router = APIRouter()
+
+@router.get("/xlatest/{number}")
+async def get_xlatest(number: int, response: Response):
+    transactions = await sheet_services.get_xlatests_transactions(number)
+
+    try:
+        image = await sheet_services.get_transaction_image(transactions)
+        if image:
+            return Response(content=image, media_type="image/png")
+    except:
+        pass
+
+    logger.error("unable to generate transactions images")
+    response.status_code = status.HTTP_503_SERVICE_UNAVAILABLE
+    return {
+        "success": False,
+        "error": {
+            "content": "were are unable to generate transactions images"
+        }
+    }
 
 @router.get("/balances")
 async def get_balances(response: Response):

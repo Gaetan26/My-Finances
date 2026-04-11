@@ -21,3 +21,6 @@ class Transaction(BaseModel):
     type: Type
     category: str
     description: str = ""
+
+class XLatest(BaseModel):
+    number: int = Field(min=1)
