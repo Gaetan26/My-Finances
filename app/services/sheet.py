@@ -8,7 +8,7 @@ import httpx
 
 sheet = gspread.client.open("My Finances").worksheet("Transactions")
 
-NODE_SERVICE_URL = "http://localhost:3000/render"
+NODE_SERVICE_URL = "http://my-finances-image:3000/render"
 
 async def get_balances() -> dict:
     transactions = await get_transactions()
