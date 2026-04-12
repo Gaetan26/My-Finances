@@ -4,3 +4,4 @@ loguru
 gspread
 oauth2client
 httpx
+python-dotenv
