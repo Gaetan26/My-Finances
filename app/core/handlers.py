@@ -36,7 +36,7 @@ async def generic_exception_handler(request: Request, exc: Exception):
             "success": False,
             "content": {
                 "error": "Internal Server Error",
-                "more": str(exc)  # for dev only
+                # "more": str(exc)  # for dev only
             },
         },
     )

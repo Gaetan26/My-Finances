@@ -1,29 +1,48 @@
 
-from fastapi import APIRouter, Response, status, HTTPException
+from fastapi import APIRouter, Response, status, BackgroundTasks
 from models.pydantic import sheet as sheet_models
 from services import sheet as sheet_services
+from services import email as email_services
 from utils.logger import logger
-import httpx
+from core.env import APP_EMAIL, USER_EMAIL
 
 router = APIRouter()
 
-@router.get("/xlatest/{number}")
-async def get_xlatest(number: int, response: Response):
-    transactions = await sheet_services.get_xlatests_transactions(number)
+@router.get("/latests/{number}")
+async def get_latests(response: Response, backgound_tasks: BackgroundTasks, number: int, email: bool = False):
+    transactions = await sheet_services.get_latests_transactions(number)
+    if transactions:
 
-    try:
-        image = await sheet_services.get_transaction_image(transactions)
-        if image:
-            return Response(content=image, media_type="image/png")
-    except:
-        pass
+        try:
+            image = await sheet_services.get_transactions_image(transactions)
 
-    logger.error("unable to generate transactions images")
+            if email:
+                backgound_tasks.add_task(
+                    email_services.send, 
+                    from_=APP_EMAIL, to=USER_EMAIL, 
+                    subject="Here is your financial report",
+                    text="You can find your transactions in the report attached to this email",
+                    attachment=image
+                )
+                
+                return {
+                    'sucess': True
+                }
+            
+            else:
+                if image:
+                    return Response(content=image, media_type="image/png")
+                
+        except:
+            pass
+
+
+    logger.error("unable to generate latests transactions report")
     response.status_code = status.HTTP_503_SERVICE_UNAVAILABLE
     return {
         "success": False,
         "error": {
-            "content": "were are unable to generate transactions images"
+            "content": "were are unable to generate latests transactions report"
         }
     }
 

@@ -1,6 +1,7 @@
 
 from fastapi import FastAPI
 from routes import sheet
+from core import env
 
 app = FastAPI()
 

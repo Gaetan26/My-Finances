@@ -4,11 +4,10 @@ from models.pydantic import sheet as sheet_models
 from utils.logger import logger
 from utils.others import convert_str_to_int
 from uuid import uuid4
+from core.env import FINANCES_RENDER_SERVICE
 import httpx
 
 sheet = gspread.client.open("My Finances").worksheet("Transactions")
-
-NODE_SERVICE_URL = "http://my-finances-image:3000/render"
 
 async def get_balances() -> dict:
     transactions = await get_transactions()
@@ -28,10 +27,10 @@ async def get_balances() -> dict:
 
     return balances
 
-async def get_transaction_image(transactions):
+async def get_transactions_html(transactions):
     async with httpx.AsyncClient() as client:
         response = await client.post(
-            NODE_SERVICE_URL,
+            FINANCES_RENDER_SERVICE + '/html',
             json={ 'transactions': transactions },
             timeout=10.0
         )
@@ -41,9 +40,25 @@ async def get_transaction_image(transactions):
         
         return response.content
 
-async def get_xlatests_transactions(number: int) -> list:
+async def get_transactions_image(transactions):
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            FINANCES_RENDER_SERVICE + '/image',
+            json={ 'transactions': transactions },
+            timeout=10.0
+        )
+
+        if response.status_code != 200:
+            return None
+        
+        return response.content
+
+async def get_latests_transactions(number: int) -> list:
+    if number <= 0:
+        return None
+
     transactions = await get_transactions()
-    xlatests_transactions = []
+    latests = []
 
     if number > len(transactions):
         number = len(transactions)
@@ -51,9 +66,9 @@ async def get_xlatests_transactions(number: int) -> list:
     for i in range(0, number):
         if isinstance(transactions[i]['Amount'], str):
             transactions[i]['Amount'] = convert_str_to_int(transactions[i]['Amount'])
-        xlatests_transactions.append({ 'Id': str(uuid4()), **transactions[i] })
+        latests.append({ 'Id': str(uuid4()), **transactions[i] })
     
-    return xlatests_transactions
+    return latests
 
 async def get_transactions() -> list:
     try:
